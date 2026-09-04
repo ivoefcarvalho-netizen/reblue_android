@@ -1,0 +1,186 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@
+-if(UNIX AND NOT APPLE)
++if(UNIX AND NOT APPLE AND NOT ANDROID)
+@@
+-if(WIN32)
++if(WIN32)
+@@
+-elseif(UNIX AND NOT APPLE)
++elseif(ANDROID)
++    if(REX_TARGET_PROCESSOR MATCHES "aarch64|ARM64|arm64")
++        set(REX_PLATFORM "android-arm64")
++    else()
++        message(FATAL_ERROR "Unsupported Android architecture: ${REX_TARGET_PROCESSOR}; re:Blue Android currently targets ARM64 only")
++    endif()
++elseif(UNIX AND NOT APPLE)
+@@
+-    message(FATAL_ERROR "Unsupported platform. ReXGlue supports Windows, Linux, and macOS only.")
++    message(FATAL_ERROR "Unsupported platform. ReXGlue supports Windows, Linux, macOS, and Android ARM64.")
+ endif()
+
+diff --git a/cmake/rexglue_helpers.cmake b/cmake/rexglue_helpers.cmake
+--- a/cmake/rexglue_helpers.cmake
++++ b/cmake/rexglue_helpers.cmake
+@@
+-    if(UNIX AND NOT APPLE)
++    if(UNIX AND NOT APPLE AND NOT ANDROID)
+@@
+-    if(UNIX AND NOT APPLE)
++    if(UNIX AND NOT APPLE AND NOT ANDROID)
+@@
+-    if(UNIX AND NOT APPLE)
++    if(UNIX AND NOT APPLE AND NOT ANDROID)
+         set_target_properties(${target_name} PROPERTIES
+             INSTALL_RPATH "$ORIGIN"
+             BUILD_WITH_INSTALL_RPATH ON
+         )
+     endif()
+
+diff --git a/thirdparty/CMakeLists.txt b/thirdparty/CMakeLists.txt
+--- a/thirdparty/CMakeLists.txt
++++ b/thirdparty/CMakeLists.txt
+@@
+-set(SDL_UNIX_CONSOLE_BUILD ON CACHE BOOL "" FORCE)
++if(ANDROID)
++    set(SDL_UNIX_CONSOLE_BUILD OFF CACHE BOOL "" FORCE)
++else()
++    set(SDL_UNIX_CONSOLE_BUILD ON CACHE BOOL "" FORCE)
++endif()
+@@
+-if(UNIX AND NOT APPLE)
++if(UNIX AND NOT APPLE AND NOT ANDROID)
+     set(SDL_X11               ON  CACHE BOOL "" FORCE)
+@@
+     set(SDL_PIPEWIRE          ON  CACHE BOOL "" FORCE)
+     set(SDL_PIPEWIRE_SHARED   ON  CACHE BOOL "" FORCE)
++elseif(ANDROID)
++    set(SDL_X11               OFF CACHE BOOL "" FORCE)
++    set(SDL_WAYLAND           OFF CACHE BOOL "" FORCE)
++    set(SDL_ALSA              OFF CACHE BOOL "" FORCE)
++    set(SDL_PULSEAUDIO        OFF CACHE BOOL "" FORCE)
++    set(SDL_PIPEWIRE          OFF CACHE BOOL "" FORCE)
+ endif()
+
+diff --git a/src/ui/CMakeLists.txt b/src/ui/CMakeLists.txt
+--- a/src/ui/CMakeLists.txt
++++ b/src/ui/CMakeLists.txt
+@@
+ if(WIN32)
+     set(REXUI_PLATFORM_SOURCES
+         surface_win.cpp
+     )
++elseif(ANDROID)
++    set(REXUI_PLATFORM_SOURCES
++        surface_android.cpp
++    )
+ elseif(APPLE)
+@@
+-if(UNIX AND NOT APPLE)
++if(UNIX AND NOT APPLE AND NOT ANDROID)
+@@
+ elseif(APPLE)
+     target_link_libraries(rexui PRIVATE "-framework CoreFoundation")
++elseif(ANDROID)
++    target_link_libraries(rexui PUBLIC android)
+ endif()
+
+diff --git a/include/rex/ui/surface_android.h b/include/rex/ui/surface_android.h
+new file mode 100644
+--- /dev/null
++++ b/include/rex/ui/surface_android.h
+@@
++#pragma once
++
++#include <android/native_window.h>
++#include <rex/ui/surface.h>
++
++namespace rex::ui {
++class AndroidNativeWindowSurface final : public Surface {
++ public:
++  explicit AndroidNativeWindowSurface(ANativeWindow* window) : window_(window) {}
++  TypeIndex GetType() const override { return kTypeIndex_AndroidNativeWindow; }
++  ANativeWindow* window() const { return window_; }
++
++ protected:
++  bool GetSizeImpl(uint32_t& width_out, uint32_t& height_out) const override;
++
++ private:
++  ANativeWindow* window_ = nullptr;
++};
++}  // namespace rex::ui
+
+diff --git a/src/ui/surface_android.cpp b/src/ui/surface_android.cpp
+new file mode 100644
+--- /dev/null
++++ b/src/ui/surface_android.cpp
+@@
++#include <rex/ui/surface_android.h>
++#include <android/native_window.h>
++
++namespace rex::ui {
++bool AndroidNativeWindowSurface::GetSizeImpl(uint32_t& width_out,
++                                             uint32_t& height_out) const {
++  if (!window_) return false;
++  const int width = ANativeWindow_getWidth(window_);
++  const int height = ANativeWindow_getHeight(window_);
++  if (width <= 0 || height <= 0) return false;
++  width_out = static_cast<uint32_t>(width);
++  height_out = static_cast<uint32_t>(height);
++  return true;
++}
++}  // namespace rex::ui
+
+diff --git a/src/ui/window_sdl.cpp b/src/ui/window_sdl.cpp
+--- a/src/ui/window_sdl.cpp
++++ b/src/ui/window_sdl.cpp
+@@
+ #if REX_PLATFORM_WIN32
+ #include <rex/ui/surface_win.h>
++#elif REX_PLATFORM_ANDROID
++#include <android/native_window.h>
++#include <rex/ui/surface_android.h>
+ #elif REX_PLATFORM_MAC
+@@
+ void* WindowSDL::GetNativeWindowHandle() const {
+ #if REX_PLATFORM_WIN32
+@@
+   return SDL_GetPointerProperty(SDL_GetWindowProperties(sdl_window_),
+                                 SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
++#elif REX_PLATFORM_ANDROID
++  if (!sdl_window_) return nullptr;
++  return SDL_GetPointerProperty(SDL_GetWindowProperties(sdl_window_),
++                                SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr);
+ #else
+   return nullptr;
+ #endif
+@@
+ #if REX_PLATFORM_WIN32
+@@
+-#elif REX_PLATFORM_MAC
++#elif REX_PLATFORM_ANDROID
++  if (allowed_types & Surface::kTypeFlag_AndroidNativeWindow) {
++    SDL_PropertiesID props = SDL_GetWindowProperties(sdl_window_);
++    auto* native_window = static_cast<ANativeWindow*>(SDL_GetPointerProperty(
++        props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr));
++    if (native_window) {
++      return std::make_unique<AndroidNativeWindowSurface>(native_window);
++    }
++  }
++#elif REX_PLATFORM_MAC
+@@
+ #endif
+   return nullptr;
+ }
+
+diff --git a/src/ui/windowed_app_main_sdl.cpp b/src/ui/windowed_app_main_sdl.cpp
+--- a/src/ui/windowed_app_main_sdl.cpp
++++ b/src/ui/windowed_app_main_sdl.cpp
+@@
+ #include <rex/ui/windowed_app_context_sdl.h>
++
++#if REX_PLATFORM_ANDROID
++#include <SDL3/SDL_main.h>
++#endif
