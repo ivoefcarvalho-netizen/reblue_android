@@ -1,0 +1,60 @@
+name: Build ReXGlue Android ARM64
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/build-rexglue-android.yml'
+  workflow_dispatch:
+
+jobs:
+  build-rexglue:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout port repository
+        uses: actions/checkout@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK r29
+        run: sdkmanager 'ndk;29.0.14206865'
+
+      - name: Fetch upstream re:Blue
+        run: git clone --depth 1 https://github.com/zolaware/reblue.git upstream/reblue
+
+      - name: Fetch upstream ReXGlue SDK and submodules
+        run: |
+          git clone --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
+
+      - name: Apply Android source transforms
+        run: python3 scripts/apply_android_port.py
+
+      - name: Configure ReXGlue for Android ARM64
+        env:
+          NDK: ${{ env.ANDROID_HOME }}/ndk/29.0.14206865
+        run: |
+          cmake -S upstream/rexglue-sdk -B build/rexglue-android -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-28 \
+            -DANDROID_STL=c++_static \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DREXGLUE_BUILD_TESTS=OFF \
+            -DREXGLUE_ENABLE_TRACY=OFF \
+            -DREXGLUE_ENABLE_PERF_COUNTERS=OFF \
+            -DREXGLUE_USE_D3D12=OFF \
+            -DREXGLUE_USE_VULKAN=ON
+
+      - name: Build ReXGlue runtime
+        run: cmake --build build/rexglue-android --parallel 4
+
+      - name: Summary
+        if: always()
+        run: |
+          echo '### ReXGlue Android ARM64 smoke build' >> "$GITHUB_STEP_SUMMARY"
+          echo '- ABI: arm64-v8a' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Android API: 28' >> "$GITHUB_STEP_SUMMARY"
+          echo '- NDK: r29 (29.0.14206865)' >> "$GITHUB_STEP_SUMMARY"
