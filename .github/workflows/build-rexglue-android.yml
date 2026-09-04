@@ -30,7 +30,7 @@ jobs:
           git clone --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v4.py
+        run: python3 scripts/apply_android_port_v5.py
 
       - name: Configure ReXGlue for Android ARM64
         env:
@@ -49,7 +49,7 @@ jobs:
             -DREXGLUE_USE_VULKAN=ON
 
       - name: Build ReXGlue runtime
-        run: cmake --build build/rexglue-android --parallel 4
+        run: cmake --build build/rexglue-android --target rexruntime --parallel 4
 
       - name: Summary
         if: always()
@@ -59,3 +59,4 @@ jobs:
           echo '- Android API: 28' >> "$GITHUB_STEP_SUMMARY"
           echo '- NDK: r29 (29.0.14206865)' >> "$GITHUB_STEP_SUMMARY"
           echo '- Native AArch64 fiber backend: enabled' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Build target: rexruntime only' >> "$GITHUB_STEP_SUMMARY"
