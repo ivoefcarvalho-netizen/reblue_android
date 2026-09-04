@@ -1,0 +1,42 @@
+name: Validate Android patches
+
+on:
+  push:
+    branches: [android-port]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout port repository
+        uses: actions/checkout@v4
+
+      - name: Fetch upstream re:Blue
+        run: git clone --depth 1 https://github.com/zolaware/reblue.git upstream/reblue
+
+      - name: Fetch upstream ReXGlue SDK
+        run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
+
+      - name: Validate re:Blue patch
+        run: |
+          cd upstream/reblue
+          git apply --check ../../patches/reblue-android.patch
+
+      - name: Validate ReXGlue patch
+        run: |
+          cd upstream/rexglue-sdk
+          git apply --check ../../patches/rexglue-android.patch
+
+      - name: Apply patches for inspection
+        run: |
+          cd upstream/reblue
+          git apply ../../patches/reblue-android.patch
+          cd ../rexglue-sdk
+          git apply ../../patches/rexglue-android.patch
+
+      - name: Summary
+        run: |
+          echo '### Android port patch validation' >> "$GITHUB_STEP_SUMMARY"
+          echo '- re:Blue patch: OK' >> "$GITHUB_STEP_SUMMARY"
+          echo '- ReXGlue patch: OK' >> "$GITHUB_STEP_SUMMARY"
