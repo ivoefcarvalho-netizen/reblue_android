@@ -19,7 +19,7 @@ jobs:
         run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v5.py
+        run: python3 scripts/apply_android_port_v6.py
 
       - name: Validate transformed trees
         run: |
@@ -32,6 +32,8 @@ jobs:
           grep -q 'SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER' upstream/rexglue-sdk/src/ui/window_sdl.cpp
           grep -q 'defined(__APPLE__) || defined(__ANDROID__)' upstream/rexglue-sdk/include/rex/chrono/chrono.h
           grep -q 'AndroidContext' upstream/rexglue-sdk/include/rex/thread/fiber.h
+          grep -q 'android_get_device_api_level' upstream/rexglue-sdk/include/rex/main_android.h
+          grep -q '#include <rex/main_android.h>' upstream/rexglue-sdk/src/core/memory_posix.cpp
           test -f upstream/rexglue-sdk/include/rex/ui/surface_android.h
           test -f upstream/rexglue-sdk/src/ui/surface_android.cpp
           test -f upstream/rexglue-sdk/src/core/fiber_android.cpp
@@ -47,3 +49,4 @@ jobs:
           echo '- Android libc++ chrono compatibility: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- Native AArch64 fiber backend: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- ASM enabled at project root: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Android API-level bridge: present' >> "$GITHUB_STEP_SUMMARY"
