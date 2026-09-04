@@ -1,0 +1,82 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@
+-option(REBLUE_BUILD_INSTALLER "Build the built-in first-run disc installer" ON)
++if(ANDROID)
++    set(REBLUE_INSTALLER_DEFAULT OFF)
++else()
++    set(REBLUE_INSTALLER_DEFAULT ON)
++endif()
++option(REBLUE_BUILD_INSTALLER "Build the built-in first-run disc installer" ${REBLUE_INSTALLER_DEFAULT})
+@@
+ foreach(target IN LISTS REBLUE_TARGETS)
+-    add_executable(${target})
+-    set_target_properties(${target} PROPERTIES WIN32_EXECUTABLE ON)
++    if(ANDROID)
++        # SDLActivity loads libmain.so. Keep the CMake target name 'reblue' so
++        # all of the existing target wiring remains valid.
++        add_library(${target} SHARED)
++        set_target_properties(${target} PROPERTIES OUTPUT_NAME main)
++    else()
++        add_executable(${target})
++        set_target_properties(${target} PROPERTIES WIN32_EXECUTABLE ON)
++    endif()
+ endforeach()
+@@
+-if(NOT WIN32)
++if(NOT WIN32 AND NOT ANDROID)
+     find_package(CURL QUIET)
+@@
+-foreach(target IN LISTS REBLUE_TARGETS)
+-    add_custom_command(TARGET ${target} POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+-            "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gamecontrollerdb/gamecontrollerdb.txt"
+-            $<TARGET_FILE_DIR:${target}>
+-        VERBATIM)
+-endforeach()
++if(NOT ANDROID)
++    foreach(target IN LISTS REBLUE_TARGETS)
++        add_custom_command(TARGET ${target} POST_BUILD
++            COMMAND ${CMAKE_COMMAND} -E copy_if_different
++                "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gamecontrollerdb/gamecontrollerdb.txt"
++                $<TARGET_FILE_DIR:${target}>
++            VERBATIM)
++    endforeach()
++endif()
+@@
+-    else()
++    elseif(ANDROID)
++        # plume uses volk and VK_KHR_android_surface; no desktop Vulkan loader
++        # package is required. ANativeWindow symbols are provided by libandroid.
++        target_link_libraries(${target} PRIVATE android)
++    else()
+@@
+-if(UNIX)
++if(UNIX AND NOT ANDROID)
+     foreach(target IN LISTS REBLUE_TARGETS)
+@@
+ endif()
+
+diff --git a/src/platform/native_window.cpp b/src/platform/native_window.cpp
+--- a/src/platform/native_window.cpp
++++ b/src/platform/native_window.cpp
+@@
+ #if defined(_WIN32)
+@@
+ bool GetNativeRenderWindow(rex::ui::Window *window, plume::RenderWindow &out) {
+@@
+ }
++
++#elif defined(__ANDROID__)
++
++bool GetNativeRenderWindow(rex::ui::Window *window, plume::RenderWindow &out) {
++  out = static_cast<plume::RenderWindow>(window->GetNativeWindowHandle());
++  if (!out) {
++    BD_ERROR("Window has no Android ANativeWindow yet");
++    return false;
++  }
++  return true;
++}
+ 
+ #elif defined(__APPLE__)
