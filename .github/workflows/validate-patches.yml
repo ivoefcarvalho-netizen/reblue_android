@@ -19,7 +19,7 @@ jobs:
         run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port.py
+        run: python3 scripts/apply_android_port_v2.py
 
       - name: Validate transformed trees
         run: |
