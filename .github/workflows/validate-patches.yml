@@ -1,8 +1,8 @@
-name: Validate Android patches
+name: Validate Android source transforms
 
 on:
   push:
-    branches: [android-port]
+    branches: [main, android-port]
   workflow_dispatch:
 
 jobs:
@@ -18,25 +18,24 @@ jobs:
       - name: Fetch upstream ReXGlue SDK
         run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
-      - name: Validate re:Blue patch
-        run: |
-          cd upstream/reblue
-          git apply --check ../../patches/reblue-android.patch
+      - name: Apply Android source transforms
+        run: python3 scripts/apply_android_port.py
 
-      - name: Validate ReXGlue patch
+      - name: Validate transformed trees
         run: |
-          cd upstream/rexglue-sdk
-          git apply --check ../../patches/rexglue-android.patch
-
-      - name: Apply patches for inspection
-        run: |
-          cd upstream/reblue
-          git apply ../../patches/reblue-android.patch
-          cd ../rexglue-sdk
-          git apply ../../patches/rexglue-android.patch
+          git -C upstream/reblue diff --check
+          git -C upstream/rexglue-sdk diff --check
+          grep -q 'OUTPUT_NAME main' upstream/reblue/CMakeLists.txt
+          grep -q 'defined(__ANDROID__)' upstream/reblue/src/platform/native_window.cpp
+          grep -q 'android-arm64' upstream/rexglue-sdk/CMakeLists.txt
+          grep -q 'SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER' upstream/rexglue-sdk/src/ui/window_sdl.cpp
+          test -f upstream/rexglue-sdk/include/rex/ui/surface_android.h
+          test -f upstream/rexglue-sdk/src/ui/surface_android.cpp
 
       - name: Summary
         run: |
-          echo '### Android port patch validation' >> "$GITHUB_STEP_SUMMARY"
-          echo '- re:Blue patch: OK' >> "$GITHUB_STEP_SUMMARY"
-          echo '- ReXGlue patch: OK' >> "$GITHUB_STEP_SUMMARY"
+          echo '### Android port source validation' >> "$GITHUB_STEP_SUMMARY"
+          echo '- re:Blue transforms: OK' >> "$GITHUB_STEP_SUMMARY"
+          echo '- ReXGlue transforms: OK' >> "$GITHUB_STEP_SUMMARY"
+          echo '- SDL3 → ANativeWindow bridge: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Android ARM64 platform selection: present' >> "$GITHUB_STEP_SUMMARY"
