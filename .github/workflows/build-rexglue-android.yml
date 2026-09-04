@@ -30,7 +30,7 @@ jobs:
           git clone --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v2.py
+        run: python3 scripts/apply_android_port_v3.py
 
       - name: Configure ReXGlue for Android ARM64
         env:
