@@ -28,7 +28,7 @@ jobs:
           git clone --quiet --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v8.py >/dev/null
+        run: python3 scripts/apply_android_port_v9.py >/dev/null
 
       - name: Configure ReXGlue for Android ARM64
         env:
@@ -68,13 +68,16 @@ jobs:
           fi
           echo '===== BUILD SUCCEEDED ====='
           tail -n 30 build/rexglue-android/build.log
+          file upstream/rexglue-sdk/out/android-arm64/librexruntime.so
+          ls -lh upstream/rexglue-sdk/out/android-arm64/librexruntime.so
 
-      - name: Upload diagnostic log
+      - name: Upload runtime and diagnostic log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rexglue-android-build-log
+          name: rexglue-android-runtime
           path: |
+            upstream/rexglue-sdk/out/android-arm64/librexruntime.so
             build/rexglue-android/configure.log
             build/rexglue-android/build.log
           if-no-files-found: warn
@@ -91,5 +94,6 @@ jobs:
           echo '- Android API-level bridge: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Android robust-mutex fallback: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Android libc pthread/rt link fix: enabled' >> "$GITHUB_STEP_SUMMARY"
+          echo '- SDL3 content URI JNI bridge: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Build target: rexruntime only' >> "$GITHUB_STEP_SUMMARY"
           echo '- Build exit code: ${{ steps.build.outputs.exit_code }}' >> "$GITHUB_STEP_SUMMARY"
