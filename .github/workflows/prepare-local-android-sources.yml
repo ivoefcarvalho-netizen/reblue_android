@@ -1,0 +1,51 @@
+name: Prepare transformed Android public sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prepare-local-android-sources.yml'
+      - 'scripts/apply_android_port_v11.py'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout helper repository
+        uses: actions/checkout@v4
+
+      - name: Fetch public upstream sources and submodules
+        run: |
+          git clone --quiet --recurse-submodules --shallow-submodules https://github.com/zolaware/reblue.git upstream/reblue
+          git clone --quiet --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
+
+      - name: Record upstream revisions
+        run: |
+          {
+            echo "reblue=$(git -C upstream/reblue rev-parse HEAD)"
+            echo "rexglue=$(git -C upstream/rexglue-sdk rev-parse HEAD)"
+          } > upstream/ANDROID_SOURCE_REVISIONS.txt
+          cat upstream/ANDROID_SOURCE_REVISIONS.txt
+
+      - name: Apply Android v11 source transforms
+        run: python3 scripts/apply_android_port_v11.py >/dev/null
+
+      - name: Remove git metadata
+        run: |
+          find upstream -name .git -type d -prune -exec rm -rf {} +
+          find upstream -name .git -type f -delete
+
+      - name: Archive transformed public source trees
+        run: |
+          tar --zstd -cf reblue-android-public-sources-v11.tar.zst -C upstream \
+            ANDROID_SOURCE_REVISIONS.txt reblue rexglue-sdk
+          ls -lh reblue-android-public-sources-v11.tar.zst
+
+      - name: Upload transformed public sources
+        uses: actions/upload-artifact@v4
+        with:
+          name: reblue-android-public-sources-v11
+          path: reblue-android-public-sources-v11.tar.zst
+          retention-days: 7
