@@ -20,22 +20,21 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Android NDK r29
-        run: sdkmanager 'ndk;29.0.14206865'
+        run: sdkmanager 'ndk;29.0.14206865' >/dev/null
 
-      - name: Fetch upstream re:Blue
-        run: git clone --depth 1 https://github.com/zolaware/reblue.git upstream/reblue
-
-      - name: Fetch upstream ReXGlue SDK and submodules
+      - name: Fetch upstream sources
         run: |
-          git clone --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
+          git clone --quiet --depth 1 https://github.com/zolaware/reblue.git upstream/reblue
+          git clone --quiet --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v7.py
+        run: python3 scripts/apply_android_port_v7.py >/dev/null
 
       - name: Configure ReXGlue for Android ARM64
         env:
           NDK: ${{ env.ANDROID_HOME }}/ndk/29.0.14206865
         run: |
+          mkdir -p build/rexglue-android
           cmake -S upstream/rexglue-sdk -B build/rexglue-android -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=arm64-v8a \
@@ -46,10 +45,40 @@ jobs:
             -DREXGLUE_ENABLE_TRACY=OFF \
             -DREXGLUE_ENABLE_PERF_COUNTERS=OFF \
             -DREXGLUE_USE_D3D12=OFF \
-            -DREXGLUE_USE_VULKAN=ON
+            -DREXGLUE_USE_VULKAN=ON \
+            > build/rexglue-android/configure.log 2>&1 || { cat build/rexglue-android/configure.log; exit 1; }
+          tail -n 20 build/rexglue-android/configure.log
 
       - name: Build ReXGlue runtime
-        run: cmake --build build/rexglue-android --target rexruntime --parallel 4
+        id: build
+        shell: bash
+        run: |
+          set +e
+          cmake --build build/rexglue-android --target rexruntime --parallel 4 \
+            > build/rexglue-android/build.log 2>&1
+          status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          if [ "$status" -ne 0 ]; then
+            echo '===== FIRST COMPILER/LINKER ERRORS ====='
+            grep -nE -m 40 '(^|[ :])(error:|fatal error:|undefined reference|FAILED:|ld.lld: error:|ninja: build stopped)' \
+              build/rexglue-android/build.log || true
+            echo '===== LAST 120 BUILD LINES ====='
+            tail -n 120 build/rexglue-android/build.log
+            exit "$status"
+          fi
+          echo '===== BUILD SUCCEEDED ====='
+          tail -n 30 build/rexglue-android/build.log
+
+      - name: Upload diagnostic log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rexglue-android-build-log
+          path: |
+            build/rexglue-android/configure.log
+            build/rexglue-android/build.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Summary
         if: always()
@@ -62,3 +91,4 @@ jobs:
           echo '- Android API-level bridge: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Android robust-mutex fallback: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Build target: rexruntime only' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Build exit code: ${{ steps.build.outputs.exit_code }}' >> "$GITHUB_STEP_SUMMARY"
