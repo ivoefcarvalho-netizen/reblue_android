@@ -1,0 +1,60 @@
+name: Prepare ReXGlue host codegen tool
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prepare-host-codegen.yml'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout helper repository
+        uses: actions/checkout@v4
+
+      - name: Download official ReXGlue 0.10.0 Linux AMD64 SDK
+        run: |
+          curl -L --fail --retry 3 \
+            -o /tmp/rexglue-sdk.zip \
+            https://github.com/rexglue/rexglue-sdk/releases/download/v0.10.0/rexglue-sdk-0.10.0-linux-amd64.zip
+          echo '0388edb3f8fb1444f1b0ad5d440cb02d9690ac20a76b04fd6b7dcc19f59328a6  /tmp/rexglue-sdk.zip' | sha256sum -c -
+
+      - name: Extract host executable and runtime libraries
+        shell: bash
+        run: |
+          rm -rf /tmp/rexglue-sdk host-codegen
+          mkdir -p /tmp/rexglue-sdk host-codegen
+          unzip -q /tmp/rexglue-sdk.zip -d /tmp/rexglue-sdk
+
+          exe=$(find /tmp/rexglue-sdk -type f -name rexglue -perm -111 | head -1)
+          if [ -z "$exe" ]; then
+            echo 'rexglue executable not found in official SDK' >&2
+            find /tmp/rexglue-sdk -maxdepth 4 -type f | head -100
+            exit 1
+          fi
+
+          cp -a "$exe" host-codegen/rexglue
+          chmod +x host-codegen/rexglue
+
+          # Copy SDK-provided shared libraries next to the CLI. System libraries
+          # remain supplied by the Ubuntu runner/container.
+          find /tmp/rexglue-sdk -type f \( -name '*.so' -o -name '*.so.*' \) -print0 |
+            while IFS= read -r -d '' f; do cp -a "$f" host-codegen/; done
+
+          echo '===== rexglue location ====='
+          echo "$exe"
+          echo '===== bundled files ====='
+          ls -lh host-codegen
+          echo '===== dynamic dependencies ====='
+          LD_LIBRARY_PATH="$PWD/host-codegen:${LD_LIBRARY_PATH:-}" ldd host-codegen/rexglue || true
+          echo '===== CLI smoke test ====='
+          LD_LIBRARY_PATH="$PWD/host-codegen:${LD_LIBRARY_PATH:-}" host-codegen/rexglue --help | head -80
+
+      - name: Upload host codegen bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: rexglue-host-codegen-linux-amd64
+          path: host-codegen/
+          retention-days: 7
