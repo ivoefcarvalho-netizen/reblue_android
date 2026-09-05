@@ -19,7 +19,7 @@ jobs:
         run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v8.py
+        run: python3 scripts/apply_android_port_v9.py
 
       - name: Validate transformed trees
         run: |
@@ -36,10 +36,15 @@ jobs:
           grep -q '#include <rex/main_android.h>' upstream/rexglue-sdk/src/core/memory_posix.cpp
           test "$(grep -c 'REX_PLATFORM_LINUX && !REX_PLATFORM_ANDROID' upstream/rexglue-sdk/src/core/threading_posix.cpp)" -ge 3
           grep -A2 'elseif(ANDROID)' upstream/rexglue-sdk/src/core/CMakeLists.txt | grep -q 'target_link_libraries(rexcore PRIVATE dl)'
+          grep -q 'filesystem_android.cpp' upstream/rexglue-sdk/src/core/CMakeLists.txt
+          grep -q 'SDL_GetAndroidJNIEnv' upstream/rexglue-sdk/src/core/filesystem_android.cpp
+          grep -q 'SDL_GetAndroidActivity' upstream/rexglue-sdk/src/core/filesystem_android.cpp
+          grep -q 'OpenAndroidContentFileDescriptor' upstream/rexglue-sdk/src/core/filesystem_android.cpp
           test -f upstream/rexglue-sdk/include/rex/ui/surface_android.h
           test -f upstream/rexglue-sdk/src/ui/surface_android.cpp
           test -f upstream/rexglue-sdk/src/core/fiber_android.cpp
           test -f upstream/rexglue-sdk/src/core/fiber_android_arm64.S
+          test -f upstream/rexglue-sdk/src/core/filesystem_android.cpp
 
       - name: Summary
         run: |
@@ -54,3 +59,4 @@ jobs:
           echo '- Android API-level bridge: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- Bionic robust-mutex fallback: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- Android pthread/rt libc linkage: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- SDL3 Android content URI bridge: present' >> "$GITHUB_STEP_SUMMARY"
