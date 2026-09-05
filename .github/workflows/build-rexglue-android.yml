@@ -28,7 +28,7 @@ jobs:
           git clone --quiet --recurse-submodules --shallow-submodules https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v9.py >/dev/null
+        run: python3 scripts/apply_android_port_v11.py >/dev/null
 
       - name: Configure ReXGlue for Android ARM64
         env:
@@ -95,5 +95,6 @@ jobs:
           echo '- Android robust-mutex fallback: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Android libc pthread/rt link fix: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- SDL3 content URI JNI bridge: enabled' >> "$GITHUB_STEP_SUMMARY"
+          echo '- SDL3 available to rexcore: enabled' >> "$GITHUB_STEP_SUMMARY"
           echo '- Build target: rexruntime only' >> "$GITHUB_STEP_SUMMARY"
           echo '- Build exit code: ${{ steps.build.outputs.exit_code }}' >> "$GITHUB_STEP_SUMMARY"
