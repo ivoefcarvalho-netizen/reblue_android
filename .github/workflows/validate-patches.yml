@@ -19,7 +19,7 @@ jobs:
         run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v9.py
+        run: python3 scripts/apply_android_port_v10.py
 
       - name: Validate transformed trees
         run: |
@@ -27,6 +27,8 @@ jobs:
           git -C upstream/rexglue-sdk diff --check
           grep -q 'OUTPUT_NAME main' upstream/reblue/CMakeLists.txt
           grep -q 'defined(__ANDROID__)' upstream/reblue/src/platform/native_window.cpp
+          grep -q 'REBLUE_PREGENERATED' upstream/reblue/generated/rexglue.cmake
+          grep -q 'Using pre-generated re:Blue recompilation sources' upstream/reblue/generated/rexglue.cmake
           grep -q 'android-arm64' upstream/rexglue-sdk/CMakeLists.txt
           grep -q 'enable_language(ASM)' upstream/rexglue-sdk/CMakeLists.txt
           grep -q 'SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER' upstream/rexglue-sdk/src/ui/window_sdl.cpp
@@ -60,3 +62,4 @@ jobs:
           echo '- Bionic robust-mutex fallback: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- Android pthread/rt libc linkage: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- SDL3 Android content URI bridge: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Pre-generated re:Blue cross-build mode: present' >> "$GITHUB_STEP_SUMMARY"
