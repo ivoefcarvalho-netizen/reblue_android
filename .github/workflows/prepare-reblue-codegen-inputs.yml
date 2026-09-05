@@ -1,0 +1,31 @@
+name: Prepare reBlue public codegen inputs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/prepare-reblue-codegen-inputs.yml'
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fetch upstream reBlue
+        run: git clone --quiet --depth 1 https://github.com/zolaware/reblue.git upstream-reblue
+
+      - name: Collect public codegen inputs
+        run: |
+          mkdir -p codegen-inputs
+          cp upstream-reblue/reblue_manifest.toml codegen-inputs/
+          cp -a upstream-reblue/config codegen-inputs/
+          mkdir -p codegen-inputs/generated codegen-inputs/assets
+          cp upstream-reblue/generated/rexglue.cmake codegen-inputs/generated/
+          find codegen-inputs -type f -print | sort
+
+      - name: Upload public codegen inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: reblue-public-codegen-inputs
+          path: codegen-inputs/
+          retention-days: 7
