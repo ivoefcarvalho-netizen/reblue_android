@@ -13,13 +13,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch upstream re:Blue
-        run: git clone --depth 1 https://github.com/zolaware/reblue.git upstream/reblue
+        run: git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/zolaware/reblue.git upstream/reblue
 
       - name: Fetch upstream ReXGlue SDK
         run: git clone --depth 1 https://github.com/rexglue/rexglue-sdk.git upstream/rexglue-sdk
 
       - name: Apply Android source transforms
-        run: python3 scripts/apply_android_port_v11.py
+        run: python3 scripts/apply_android_port_v12.py
 
       - name: Validate transformed trees
         run: |
@@ -29,6 +29,11 @@ jobs:
           grep -q 'defined(__ANDROID__)' upstream/reblue/src/platform/native_window.cpp
           grep -q 'REBLUE_PREGENERATED' upstream/reblue/generated/rexglue.cmake
           grep -q 'Using pre-generated re:Blue recompilation sources' upstream/reblue/generated/rexglue.cmake
+          grep -q 'VkResult creationResult = VK_NOT_READY' upstream/reblue/thirdparty/plume/plume_vulkan.h
+          grep -q 'creationResult = res' upstream/reblue/thirdparty/plume/plume_vulkan.cpp
+          grep -q 'VkResult={} occurrence={}' upstream/reblue/src/gpu/device.cpp
+          grep -q 'failure_count.fetch_add' upstream/reblue/src/gpu/device.cpp
+          grep -q 'physicalDeviceProperties' upstream/reblue/src/gpu/device.cpp
           grep -q 'android-arm64' upstream/rexglue-sdk/CMakeLists.txt
           grep -q 'enable_language(ASM)' upstream/rexglue-sdk/CMakeLists.txt
           grep -q 'SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER' upstream/rexglue-sdk/src/ui/window_sdl.cpp
@@ -64,3 +69,6 @@ jobs:
           echo '- SDL3 Android content URI bridge: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- SDL3 Android rexcore dependency: present' >> "$GITHUB_STEP_SUMMARY"
           echo '- Pre-generated re:Blue cross-build mode: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Vulkan shader/pipeline VkResult capture: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Vulkan pipeline failure throttling: present' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Vulkan GPU/API/driver diagnostics: present' >> "$GITHUB_STEP_SUMMARY"
