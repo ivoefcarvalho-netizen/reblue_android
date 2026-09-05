@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/prepare-local-android-sources.yml'
-      - 'scripts/apply_android_port_v11.py'
+      - 'scripts/apply_android_port_v12.py'
 
 jobs:
   prepare:
@@ -29,8 +29,8 @@ jobs:
           } > upstream/ANDROID_SOURCE_REVISIONS.txt
           cat upstream/ANDROID_SOURCE_REVISIONS.txt
 
-      - name: Apply Android v11 source transforms
-        run: python3 scripts/apply_android_port_v11.py >/dev/null
+      - name: Apply Android v12 source transforms
+        run: python3 scripts/apply_android_port_v12.py >/dev/null
 
       - name: Remove git metadata
         run: |
@@ -39,13 +39,13 @@ jobs:
 
       - name: Archive transformed public source trees
         run: |
-          tar --zstd -cf reblue-android-public-sources-v11.tar.zst -C upstream \
+          tar --zstd -cf reblue-android-public-sources-v12.tar.zst -C upstream \
             ANDROID_SOURCE_REVISIONS.txt reblue rexglue-sdk
-          ls -lh reblue-android-public-sources-v11.tar.zst
+          ls -lh reblue-android-public-sources-v12.tar.zst
 
       - name: Upload transformed public sources
         uses: actions/upload-artifact@v4
         with:
-          name: reblue-android-public-sources-v11
-          path: reblue-android-public-sources-v11.tar.zst
+          name: reblue-android-public-sources-v12
+          path: reblue-android-public-sources-v12.tar.zst
           retention-days: 7
