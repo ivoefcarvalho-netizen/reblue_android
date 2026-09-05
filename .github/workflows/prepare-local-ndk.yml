@@ -18,20 +18,48 @@ jobs:
       - name: Install Android NDK r29
         run: sdkmanager 'ndk;29.0.14206865' >/dev/null
 
-      - name: Archive NDK
+      - name: Archive and split NDK
         run: |
           tar --zstd -cf android-ndk-r29-linux.tar.zst \
             -C "$ANDROID_HOME/ndk" 29.0.14206865
-          ls -lh android-ndk-r29-linux.tar.zst
           sha256sum android-ndk-r29-linux.tar.zst > android-ndk-r29-linux.tar.zst.sha256
+          split -b 240M -d -a 2 android-ndk-r29-linux.tar.zst android-ndk-r29.part-
+          sha256sum android-ndk-r29.part-* > android-ndk-r29.parts.sha256
+          ls -lh android-ndk-r29.part-*
           cat android-ndk-r29-linux.tar.zst.sha256
+          cat android-ndk-r29.parts.sha256
 
-      - name: Upload NDK bundle
+      - name: Upload NDK part 00
         uses: actions/upload-artifact@v4
         with:
-          name: android-ndk-r29-linux
+          name: android-ndk-r29-part-00
           path: |
-            android-ndk-r29-linux.tar.zst
+            android-ndk-r29.part-00
             android-ndk-r29-linux.tar.zst.sha256
+            android-ndk-r29.parts.sha256
+          retention-days: 7
+          compression-level: 0
+
+      - name: Upload NDK part 01
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ndk-r29-part-01
+          path: android-ndk-r29.part-01
+          retention-days: 7
+          compression-level: 0
+
+      - name: Upload NDK part 02
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ndk-r29-part-02
+          path: android-ndk-r29.part-02
+          retention-days: 7
+          compression-level: 0
+
+      - name: Upload NDK part 03
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ndk-r29-part-03
+          path: android-ndk-r29.part-03
           retention-days: 7
           compression-level: 0
