@@ -60,7 +60,7 @@ def patch_vs(blob):
     return result
 
 
-def patch_manifest(data):
+def patch_manifest(data, version_code=22, version_name="2.2"):
     """Change only the typed versionCode and its versionName string-pool item."""
     b = bytearray(data)
     cursor = struct.unpack_from('<H', b, 2)[0]
@@ -103,14 +103,14 @@ def patch_manifest(data):
                     if name == 'versionCode':
                         require(b[attr+15] == 0x10 and struct.unpack_from('<I', b, attr+16)[0] == 21,
                                 "Unexpected typed versionCode")
-                        struct.pack_into('<I', b, attr+16, 22)
+                        struct.pack_into('<I', b, attr+16, version_code)
                         version_code_count += 1
                     elif name == 'versionName':
                         require(b[attr+15] == 3, "Expected versionName string")
                         index = struct.unpack_from('<I', b, attr+16)[0]
                         require(strings[index] == '2.1', "Unexpected versionName")
                         pos, count_bytes, encoding = locations[index]
-                        replacement = '2.2'.encode(encoding)
+                        replacement = version_name.encode(encoding)
                         require(len(replacement) == count_bytes, "Manifest string size changed")
                         b[pos:pos+count_bytes] = replacement
                         version_name_count += 1
@@ -119,10 +119,10 @@ def patch_manifest(data):
     return bytes(b)
 
 
-def patch_dex(data):
+def patch_dex(data, version_name="2.2"):
     b = bytearray(data)
-    for old, new in [(b're:Blue Android v2.1 diagnostic', b're:Blue Android v2.2 diagnostic'),
-                     (b're:Blue Android v1.5', b're:Blue Android v2.2')]:
+    for old, new in [(b're:Blue Android v2.1 diagnostic', ('re:Blue Android v'+version_name+' diagnostic').encode()),
+                     (b're:Blue Android v1.5', ('re:Blue Android v'+version_name).encode())]:
         require(b.count(old) == 1 and len(old) == len(new), "Unexpected DEX version label")
         b = b.replace(old, new)
     b[12:32] = hashlib.sha1(b[32:]).digest()
