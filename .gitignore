@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+/upstream/
+/build/
+/audit/
+*.apk
+*.jks
+*.keystore
+*.p12
+*.pfx
+*signing-key*.zip

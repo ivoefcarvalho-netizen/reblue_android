@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "apk": "reblue-android-arm64-v2.1-adreno-combined-fix.apk",
+  "sha256": "f2a70492105acc19bf13c1ecbef09bd3cf01de6ad479c50f488ae7a86a3ba24d",
+  "target_env": "vulkan1.1",
+  "checks": [
+    {
+      "name": "package",
+      "passed": true,
+      "detail": "org.reblue.android.saf"
+    },
+    {
+      "name": "min_sdk",
+      "passed": true,
+      "detail": "28"
+    },
+    {
+      "name": "version_code",
+      "passed": true,
+      "detail": {
+        "actual": "21",
+        "minimum": 21
+      }
+    },
+    {
+      "name": "persistent_certificate",
+      "passed": true,
+      "detail": [
+        "49c6c9801b1528bd840180ee55d4c69ea453b3f71639cb714d30d786d3932c52"
+      ]
+    },
+    {
+      "name": "signature_integrity",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "name": "unique_zip_entries",
+      "passed": true,
+      "detail": "Reject duplicate paths"
+    },
+    {
+      "name": "library_libmain.so",
+      "passed": true,
+      "detail": "lib/arm64-v8a/libmain.so"
+    },
+    {
+      "name": "library_librexruntime.so",
+      "passed": true,
+      "detail": "lib/arm64-v8a/librexruntime.so"
+    },
+    {
+      "name": "library_libprobe.so",
+      "passed": true,
+      "detail": "lib/arm64-v8a/libprobe.so"
+    },
+    {
+      "name": "architecture_lib/arm64-v8a/libmain.so",
+      "passed": true,
+      "detail": {
+        "class": 64,
+        "machine": "EM_AARCH64"
+      }
+    },
+    {
+      "name": "architecture_lib/arm64-v8a/libprobe.so",
+      "passed": true,
+      "detail": {
+        "class": 64,
+        "machine": "EM_AARCH64"
+      }
+    },
+    {
+      "name": "architecture_lib/arm64-v8a/librexruntime.so",
+      "passed": true,
+      "detail": {
+        "class": 64,
+        "machine": "EM_AARCH64"
+      }
+    },
+    {
+      "name": "native_marker_native-stage.log",
+      "passed": false,
+      "detail": "Search native libraries only, excluding DEX"
+    },
+    {
+      "name": "native_marker_N18-after-app-OnInitialize-ok",
+      "passed": false,
+      "detail": "Search native libraries only, excluding DEX"
+    },
+    {
+      "name": "native_marker_[pso-fail-kind]",
+      "passed": true,
+      "detail": "Search native libraries only, excluding DEX"
+    },
+    {
+      "name": "native_marker_[pso-fail-slot]",
+      "passed": true,
+      "detail": "Search native libraries only, excluding DEX"
+    },
+    {
+      "name": "native_marker_[pso-fail-elem]",
+      "passed": true,
+      "detail": "Search native libraries only, excluding DEX"
+    },
+    {
+      "name": "native_marker_CreateHostGraphicsPipeline({}) failed: VkResult={}",
+      "passed": true,
+      "detail": "Search native libraries only, excluding DEX"
+    },
+    {
+      "name": "vs_spirv-val_available",
+      "passed": true,
+      "detail": "spirv-val"
+    },
+    {
+      "name": "vs_spirv-dis_available",
+      "passed": true,
+      "detail": "spirv-dis"
+    },
+    {
+      "name": "vs_spirv_valid",
+      "passed": true,
+      "detail": {
+        "returncode": 0,
+        "output": ""
+      }
+    },
+    {
+      "name": "vs_no_bda_int64",
+      "passed": true,
+      "detail": [
+        "Shader",
+        "RuntimeDescriptorArray"
+      ]
+    },
+    {
+      "name": "ps_spirv-val_available",
+      "passed": true,
+      "detail": "spirv-val"
+    },
+    {
+      "name": "ps_spirv-dis_available",
+      "passed": true,
+      "detail": "spirv-dis"
+    },
+    {
+      "name": "ps_spirv_valid",
+      "passed": true,
+      "detail": {
+        "returncode": 0,
+        "output": ""
+      }
+    },
+    {
+      "name": "ps_no_bda_int64",
+      "passed": true,
+      "detail": [
+        "Shader",
+        "RuntimeDescriptorArray"
+      ]
+    }
+  ],
+  "shaders": {
+    "vs": {
+      "symbol": "_ZL21g_bd_2d_blit_vs_spirv",
+      "bytes": 1320,
+      "sha256": "5b89745deb51e88be59ecb525a316e3dd02fd2f34587df6675a373b72c67e030",
+      "validation": {
+        "returncode": 0,
+        "output": ""
+      },
+      "capabilities": [
+        "Shader",
+        "RuntimeDescriptorArray"
+      ],
+      "memory_models": [
+        [
+          "Logical",
+          "GLSL450"
+        ]
+      ],
+      "locations": [
+        [
+          "%in_var_POSITION",
+          "0"
+        ],
+        [
+          "%in_var_TEXCOORD0",
+          "7"
+        ],
+        [
+          "%in_var_COLOR",
+          "10"
+        ],
+        [
+          "%out_var_COLOR0",
+          "0"
+        ],
+        [
+          "%out_var_TEXCOORD0",
+          "1"
+        ]
+      ],
+      "push_constant_offsets": [
+        [
+          "%type_ConstantBuffer_BlitPushConstantsVS",
+          "0",
+          "32"
+        ]
+      ],
+      "descriptor_sets": [],
+      "bindings": [],
+      "has_int64_type": false,
+      "has_physical_storage": false,
+      "has_runtime_array_type": false,
+      "unused_runtime_array_capability": true
+    },
+    "ps": {
+      "symbol": "_ZL21g_bd_2d_blit_ps_spirv",
+      "bytes": 1436,
+      "sha256": "1decce2c72de6b3daa2e71745a16bc49c56b771cb9a12aee8b00d96a77450a8b",
+      "validation": {
+        "returncode": 0,
+        "output": ""
+      },
+      "capabilities": [
+        "Shader",
+        "RuntimeDescriptorArray"
+      ],
+      "memory_models": [
+        [
+          "Logical",
+          "GLSL450"
+        ]
+      ],
+      "locations": [
+        [
+          "%in_var_COLOR0",
+          "0"
+        ],
+        [
+          "%in_var_TEXCOORD0",
+          "1"
+        ],
+        [
+          "%out_var_SV_Target",
+          "0"
+        ]
+      ],
+      "push_constant_offsets": [
+        [
+          "%type_ConstantBuffer_BlitPushConstantsPS",
+          "0",
+          "24"
+        ],
+        [
+          "%type_ConstantBuffer_BlitPushConstantsPS",
+          "1",
+          "28"
+        ]
+      ],
+      "descriptor_sets": [
+        [
+          "%g_Texture2DDescriptorHeap",
+          "0"
+        ],
+        [
+          "%g_SamplerDescriptorHeap",
+          "3"
+        ]
+      ],
+      "bindings": [
+        [
+          "%g_Texture2DDescriptorHeap",
+          "0"
+        ],
+        [
+          "%g_SamplerDescriptorHeap",
+          "0"
+        ]
+      ],
+      "has_int64_type": false,
+      "has_physical_storage": false,
+      "has_runtime_array_type": true,
+      "unused_runtime_array_capability": false
+    }
+  },
+  "limitations": [
+    "Static inspection does not execute Android or Vulkan.",
+    "Marker presence does not prove that the corresponding code runs.",
+    "Shader inputs do not prove the runtime vertex-input filtering.",
+    "Pipeline layout, device features and push-constant uploads require runtime evidence."
+  ],
+  "tool_versions": {
+    "spirv-val": "SPIRV-Tools v2026.4 907d104d2b7197b0207b7889671b149e1d1bc8ab\nTargets:\n  SPIR-V 1.0\n  SPIR-V 1.1\n  SPIR-V 1.2\n  SPIR-V 1.3\n  SPIR-V 1.4\n  SPIR-V 1.5\n  SPIR-V 1.6\n  SPIR-V 1.2 (under OpenCL 2.2 Full Profile semantics)\n  SPIR-V 1.0 (under Vulkan 1.0 semantics)\n  SPIR-V 1.3 (under Vulkan 1.1 semantics)\n  SPIR-V 1.4 (under Vulkan 1.1 semantics)\n  SPIR-V 1.5 (under Vulkan 1.2 semantics)\n  SPIR-V 1.6 (under Vulkan 1.3 semantics) SPIR-V 1.6 (under Vulkan 1.4 semantics)",
+    "spirv-dis": "SPIRV-Tools v2026.4 907d104d2b7197b0207b7889671b149e1d1bc8ab\nTarget: SPIR-V 1.5",
+    "apksigner": "0.9"
+  },
+  "package": "org.reblue.android.saf",
+  "version_code": "21",
+  "version_name": "2.1",
+  "min_sdk": "28",
+  "certificate_sha256": [
+    "49c6c9801b1528bd840180ee55d4c69ea453b3f71639cb714d30d786d3932c52"
+  ],
+  "signature_verification": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): false\nVerified using v3 scheme (APK Signature Scheme v3): true\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: CN=reBlue Android v1.5, O=reBlue Android, C=PT\nSigner #1 certificate SHA-256 digest: 49c6c9801b1528bd840180ee55d4c69ea453b3f71639cb714d30d786d3932c52\nSigner #1 certificate SHA-1 digest: d4cc29b8140667f670a2f10b24fd17575a9558b2\nSigner #1 certificate MD5 digest: 86ac2925f892e477c2fd1760fe495878\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 2048\nSigner #1 public key SHA-256 digest: 3c2dc0a255ca87f1666205f13c2d4ff3aa67eb7f92204c65d1be452ee448501b\nSigner #1 public key SHA-1 digest: 899c4501ddf5d9230321152ebc791e40d94a3e52\nSigner #1 public key MD5 digest: 5c82951b48440fe97dc9a8b985ae6d8a\n",
+  "native_libraries": {
+    "lib/arm64-v8a/libmain.so": {
+      "bytes": 40630360,
+      "sha256": "3a89a7569e5b9062e171342a0614a4b75ae25ced18518e97d167c9a6b146fc78"
+    },
+    "lib/arm64-v8a/libprobe.so": {
+      "bytes": 8088,
+      "sha256": "e7b8fae17303a629080871c56ba0ae05cb4a258134b6d4babf9163cbcca180e7"
+    },
+    "lib/arm64-v8a/librexruntime.so": {
+      "bytes": 10197384,
+      "sha256": "18016e97414fa2b4651349c750c5b68006bf4bf583470519a4dd62d146f6d54a"
+    }
+  },
+  "native_markers": {
+    "native-stage.log": false,
+    "N18-after-app-OnInitialize-ok": false,
+    "[pso-fail-kind]": true,
+    "[pso-fail-slot]": true,
+    "[pso-fail-elem]": true,
+    "CreateHostGraphicsPipeline({}) failed: VkResult={}": true
+  },
+  "release_gate_passed": false
+}

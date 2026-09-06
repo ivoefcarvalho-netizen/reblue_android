@@ -6,6 +6,16 @@ Este repositório é deliberadamente pequeno: em vez de copiar o código origina
 
 ## Estado
 
+**Actualização de 6 de setembro de 2026:** existem APKs locais até à v2.1,
+mas este repositório ainda não contém todos os patches finais que os produziram.
+O estado abaixo refere-se à preparação inicial do repositório.
+
+A [auditoria do APK v2.1](docs/android-v21-audit.md) confirma os shaders HCG
+sem Int64/BDA e identifica a perda da instrumentação nativa de arranque.
+O novo `scripts/audit_android_apk.py` verifica o APK final, a assinatura,
+o package, a ABI, os marcadores nativos e os shaders extraídos das bibliotecas.
+Não foi feita uma nova build nem um teste na consola durante esta auditoria.
+
 - [x] Repositório de trabalho criado
 - [x] Estratégia Vulkan/SDL3/ANativeWindow definida
 - [x] Patch inicial para re:Blue
