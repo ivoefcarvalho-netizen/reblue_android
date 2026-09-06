@@ -8,4 +8,6 @@ __pycache__/
 *.keystore
 *.p12
 *.pfx
+*.pk8
+/private-signing/
 *signing-key*.zip

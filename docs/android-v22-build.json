@@ -1,0 +1,27 @@
+{
+  "base_sha256": "f2a70492105acc19bf13c1ecbef09bd3cf01de6ad479c50f488ae7a86a3ba24d",
+  "apk": "reblue-android-arm64-v2.2-vs-capability-test.apk",
+  "sha256": "3e29cb2adac066637b2aed401b4ddecc6959e892472ca5f3cd8be993dbda17a8",
+  "method": "Fixed-size SPIR-V binary edit; not a native source rebuild",
+  "experiment": "Remove unused RuntimeDescriptorArray capability from HCG VS only",
+  "changes": {
+    "AndroidManifest.xml": {
+      "before": "9ac04ee5cfb2c8355d233c4c27acdbd628d76462dfdd11872cb140d669be4ef9",
+      "after": "daaa8a06d280405577b960e084a87a31e7ea6d131c2f68085c638f445d8f9092"
+    },
+    "classes.dex": {
+      "before": "483c64a65825076a3c40b4950e63bfdb49208890bbcc159ccaa5d90ebc5fc2ee",
+      "after": "583ad5ca0a52b317fff3e5f3e0aa072a3dce6e09833ec1bb22bbcf67ec5b398e"
+    },
+    "lib/arm64-v8a/libmain.so": {
+      "before": "3a89a7569e5b9062e171342a0614a4b75ae25ced18518e97d167c9a6b146fc78",
+      "after": "1fa13127b091ae2b640e8f1f03cfc47e38b6a18285af7c330d1bd9aabe2c2a4c"
+    }
+  },
+  "vs_symbol_file_offset": 6831016,
+  "vs_size_bytes": 1320,
+  "vs_sha256": "28e92d3f5c10dd3eb8503fa5786a27d006ec103e51e80c341ae7a454e9ea7fdd",
+  "signing_certificate_sha256": "49c6c9801b1528bd840180ee55d4c69ea453b3f71639cb714d30d786d3932c52",
+  "known_inherited_regression": "v2.1 native-stage.log and N18 markers remain absent; PSO diagnostics unchanged",
+  "device_tested": false
+}
